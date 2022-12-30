@@ -4,7 +4,7 @@ use bevy::prelude::*;
 use crate::global::{AnimatedSprite, Handles, Moves};
 use crate::GameStates;
 
-const PLAYER_SIZE: Vec2 = vec2(100., 100.);
+pub const PLAYER_SIZE: Vec2 = vec2(100., 100.);
 const PLAYER_ANIMATION_FPS: f32 = 12.;
 const PLAYER_SPEED: f32 = 300.;
 
@@ -14,7 +14,7 @@ impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.add_system_set(SystemSet::on_enter(GameStates::Game).with_system(player_startup))
             .add_system_set(
-                SystemSet::on_update(GameStates::Game).with_system(player_movement).with_system(player_animations),
+                SystemSet::on_update(GameStates::Game).with_system(player_movement).with_system(slime_animations),
             );
     }
 }
@@ -41,7 +41,7 @@ fn player_startup(mut commands: Commands, assets: Res<Handles>) {
 }
 
 #[derive(Component)]
-struct Player;
+pub struct Player;
 
 fn player_movement(input: Res<Input<KeyCode>>, mut player: Query<(&mut Moves), With<Player>>) {
     let mut velocity = &mut player
@@ -67,7 +67,7 @@ fn player_movement(input: Res<Input<KeyCode>>, mut player: Query<(&mut Moves), W
     *velocity = velocity.normalize_or_zero();
 }
 
-fn player_animations (
+fn slime_animations (
     assets: Res<Handles>,
     mut player_query: Query<(&Moves, &mut Handle<TextureAtlas>, &mut TextureAtlasSprite), With<Player>>,
 ) {

@@ -1,3 +1,4 @@
+mod slime;
 mod global;
 mod loading_screen;
 mod player;
@@ -6,6 +7,7 @@ use bevy::prelude::*;
 use global::GlobalPlugin;
 use loading_screen::LoadingScreenPlugin;
 use player::PlayerPlugin;
+use slime::SlimePlugin;
 
 #[derive(Debug, PartialEq, Eq, Clone, Hash)]
 enum GameStates {
@@ -35,5 +37,6 @@ fn main() {
         .add_plugin(LoadingScreenPlugin)
         .add_plugin(PlayerPlugin)
         .add_plugin(GlobalPlugin)
+        .add_plugin(SlimePlugin)
         .run();
 }

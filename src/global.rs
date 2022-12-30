@@ -45,7 +45,7 @@ fn animate_sprite(
 }
 
 
-#[derive(Component)]
+#[derive(Component, Default)]
 pub struct Moves {
     pub velocity: Vec2,
     pub speed: f32,
