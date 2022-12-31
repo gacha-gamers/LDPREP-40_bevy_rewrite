@@ -48,7 +48,7 @@ fn animate_sprite(
 
 #[derive(Component, Default)]
 pub struct Moves {
-    pub velocity: Vec2,
+    pub direction: Vec2,
     pub speed: f32,
 }
 
@@ -57,6 +57,6 @@ fn moves_system(
     mut move_query: Query<(&Moves, &mut Transform)>,
 ) {
     for (mover, mut tf) in move_query.iter_mut() {
-        tf.translation += mover.velocity.extend(0.) * mover.speed * time.delta_seconds();
+        tf.translation += mover.direction.extend(0.) * mover.speed * time.delta_seconds();
     }
 }

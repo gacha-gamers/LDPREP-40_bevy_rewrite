@@ -11,11 +11,11 @@ pub const PLAYER_SIZE: Vec2 = vec2(100., 100.);
 const PLAYER_ANIMATION_FPS: f32 = 12.;
 const PLAYER_SPEED: f32 = 300.;
 const ARROW_DISTANCE: f32 = 100.;
-const ARROW_SIZE: Vec2 = vec2(40., 40.);
-const SLIME_THROW_MULTIPLIER: f32 = 30.; // Also dictates how fast the arrows grows
-const SLIME_THROW_MINIMUM_VALUE: f32 = 50.;
-const ARROW_SIZE_MULTIPLIER: f32 = 1.5;
-const SLIME_THROW_MULTIPLIER_MAXIMUM_VALUE: f32 = 110.;
+const ARROW_SIZE: Vec2 = vec2(40., 0.); // The default arrow size (As of now, the Y value is not used)
+const SLIME_THROW_MULTIPLIER: f32 = 5000.; // How fast the throw speed grows as the mouse button is held
+const SLIME_THROW_MINIMUM_VALUE: f32 = 300.; // Minimum throw speed
+const ARROW_SIZE_MULTIPLIER: f32 = 0.01; // Controls how fast the arrow grows
+const SLIME_THROW_MULTIPLIER_VALUE: f32 = 10000.; // Maximum throw speed
 
 pub struct PlayerPlugin;
 
@@ -47,7 +47,7 @@ fn player_startup(mut commands: Commands, assets: Res<Handles>) {
         },
         Player,
         Moves {
-            velocity: Vec2::ZERO,
+            direction: Vec2::ZERO,
             speed: PLAYER_SPEED,
         },
     ));
@@ -60,7 +60,7 @@ fn player_movement(input: Res<Input<KeyCode>>, mut player: Query<(&mut Moves), W
     let mut velocity = &mut player
         .get_single_mut()
         .expect("No player in game? Please change this line")
-        .velocity;
+        .direction;
 
     // Reset velocity
     *velocity *= 0.;
@@ -91,7 +91,7 @@ fn slime_animations(
     let (mover, mut texture, mut sprite) = player_query
         .get_single_mut()
         .expect("No player in-game? Please change this line");
-    let velocity = mover.velocity;
+    let velocity = mover.direction;
 
     if velocity.y > 0. {
         *texture = assets.player_up.clone();
@@ -142,24 +142,24 @@ fn player_aim(
     let player_tl = player_query.get_single().unwrap().translation;
     let arrow_direction = (mouse_position - player_tl.truncate()).normalize();
 
-    if !mouse.pressed(MouseButton::Left) {
-        if !arrow_query.is_empty() {
-            commands
-                .entity(arrow_query.get_single().unwrap().0)
-                .despawn();
-            
-            slime_throw_event.send(
-                SlimeThrowEvent {
-                    direction: arrow_direction,
-                    speed: *multiplier,
-                }
-            );
-            *multiplier = 0.;
-        }
+    // Reset the system once the slime is thrown
+    if !mouse.pressed(MouseButton::Left) && !arrow_query.is_empty() {
+        commands
+            .entity(arrow_query.get_single().unwrap().0)
+            .despawn();
+        
+        slime_throw_event.send(
+            SlimeThrowEvent {
+                direction: arrow_direction,
+                speed: *multiplier,
+            }
+        );
+        *multiplier = 0.;
         return;
     }
     
-    if slime_query.iter().filter(|x| x.following_player ).collect::<Vec<&Slime>>().is_empty() {
+    // If there are no slimes following the player or the button is not pressed, don't do anything
+    if slime_query.iter().filter(|x| x.following_player ).collect::<Vec<&Slime>>().is_empty() || !mouse.pressed(MouseButton::Left) {
         return;
     }
 
@@ -171,7 +171,7 @@ fn player_aim(
         arrow.1.translation = arrow_position;
         arrow.1.rotation = arrow_angle;
         arrow.2.custom_size.insert(vec2(ARROW_SIZE.x, (ARROW_SIZE.y + *multiplier - SLIME_THROW_MINIMUM_VALUE) * ARROW_SIZE_MULTIPLIER));
-        if *multiplier < SLIME_THROW_MULTIPLIER_MAXIMUM_VALUE {
+        if *multiplier < SLIME_THROW_MULTIPLIER_VALUE {
             *multiplier += time.delta_seconds() * SLIME_THROW_MULTIPLIER;
         } 
 
