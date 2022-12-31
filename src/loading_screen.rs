@@ -42,9 +42,11 @@ fn handles_load(
     let player_sideways =
     texture_atlas_loader("mini_slime-Sheet.png", vec2(22., 20.), 5, 1);
 
+    let pointing_arrow: Handle<Image> = asset_server.load("arrow.png");
+    loading.0.push(pointing_arrow.clone_untyped());
 
     commands.insert_resource(loading);
-    commands.insert_resource(Handles { player_forward, player_up, player_sideways });
+    commands.insert_resource(Handles { player_forward, player_up, player_sideways, pointing_arrow });
 }
 
 fn check_assets_ready(

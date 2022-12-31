@@ -15,6 +15,7 @@ pub struct Handles {
     pub player_forward: Handle<TextureAtlas>, 
     pub player_up: Handle<TextureAtlas>, 
     pub player_sideways: Handle<TextureAtlas>, 
+    pub pointing_arrow: Handle<Image>,
 }
 
 #[derive(Resource, Default, Debug)]
