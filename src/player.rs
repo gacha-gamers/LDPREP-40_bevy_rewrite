@@ -16,6 +16,7 @@ const SLIME_THROW_MULTIPLIER: f32 = 5000.; // How fast the throw speed grows as 
 const SLIME_THROW_MINIMUM_VALUE: f32 = 300.; // Minimum throw speed
 const ARROW_SIZE_MULTIPLIER: f32 = 0.01; // Controls how fast the arrow grows
 const SLIME_THROW_MULTIPLIER_VALUE: f32 = 10000.; // Maximum throw speed
+const PLAYER_LAYER: f32 = 9.;
 
 pub struct PlayerPlugin;
 
@@ -38,6 +39,10 @@ fn player_startup(mut commands: Commands, assets: Res<Handles>) {
             texture_atlas: assets.player_forward.clone(),
             sprite: TextureAtlasSprite {
                 custom_size: Some(PLAYER_SIZE),
+                ..Default::default()
+            },
+            transform: Transform {
+                translation: Vec2::ZERO.extend(PLAYER_LAYER),
                 ..Default::default()
             },
             ..Default::default()
@@ -163,6 +168,7 @@ fn player_aim(
         return;
     }
 
+    // The arrow gets the player layer
     let arrow_position = player_tl + arrow_direction.extend(0.) * ARROW_DISTANCE;
     // Black magic. Please do not change
     let arrow_angle = Quat::from_rotation_z(arrow_direction.y.atan2(arrow_direction.x) - PI / 2.);
