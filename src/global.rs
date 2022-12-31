@@ -6,7 +6,8 @@ impl Plugin for GlobalPlugin {
    fn build(&self, app: &mut App) {
        app
        .add_system(animate_sprite)
-       .add_system(moves_system);
+       .add_system(moves_system)
+       .add_system_to_stage(CoreStage::PostUpdate, enforce_layers);
    } 
 }
 
@@ -58,5 +59,17 @@ fn moves_system(
 ) {
     for (mover, mut tf) in move_query.iter_mut() {
         tf.translation += mover.direction.extend(0.) * mover.speed * time.delta_seconds();
+    }
+}
+
+#[derive(Component)]
+pub struct GameLayer(pub f32);
+
+// Enforce the layers automatically for ease of use
+fn enforce_layers (
+    mut layer_query: Query<(&mut Transform, &GameLayer)>
+) {
+    for (mut tf, layer) in layer_query.iter_mut() {
+        tf.translation.z = layer.0;
     }
 }

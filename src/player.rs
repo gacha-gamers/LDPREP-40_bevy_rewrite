@@ -3,7 +3,7 @@ use std::f32::consts::PI;
 use bevy::math::{vec2, vec3};
 use bevy::prelude::*;
 
-use crate::global::{AnimatedSprite, Handles, Moves};
+use crate::global::{AnimatedSprite, Handles, Moves, GameLayer};
 use crate::GameStates;
 use crate::slime::Slime;
 
@@ -41,10 +41,6 @@ fn player_startup(mut commands: Commands, assets: Res<Handles>) {
                 custom_size: Some(PLAYER_SIZE),
                 ..Default::default()
             },
-            transform: Transform {
-                translation: Vec2::ZERO.extend(PLAYER_LAYER),
-                ..Default::default()
-            },
             ..Default::default()
         },
         AnimatedSprite {
@@ -55,6 +51,7 @@ fn player_startup(mut commands: Commands, assets: Res<Handles>) {
             direction: Vec2::ZERO,
             speed: PLAYER_SPEED,
         },
+        GameLayer(PLAYER_LAYER),
     ));
 }
 
@@ -118,7 +115,7 @@ fn slime_animations(
 }
 
 #[derive(Component)]
-struct AimLine;
+pub struct PlayerAimArrow;
 
 pub struct SlimeThrowEvent {
     pub direction: Vec2,
@@ -129,8 +126,8 @@ fn player_aim(
     mouse: Res<Input<MouseButton>>,
     window: Res<Windows>,
     assets: Res<Handles>,
-    mut arrow_query: Query<(Entity, &mut Transform, &mut Sprite), (With<AimLine>, Without<Player>)>,
-    player_query: Query<&Transform, (With<Player>, Without<AimLine>)>,
+    mut arrow_query: Query<(Entity, &mut Transform, &mut Sprite), (With<PlayerAimArrow>, Without<Player>)>,
+    player_query: Query<&Transform, (With<Player>, Without<PlayerAimArrow>)>,
     mut commands: Commands,
     time: Res<Time>,
     mut multiplier: Local<f32>,
@@ -196,7 +193,8 @@ fn player_aim(
                         texture: assets.pointing_arrow.clone(),
                         ..Default::default()
                     },
-                    AimLine,
+                    PlayerAimArrow,
+                    GameLayer(PLAYER_LAYER)
                 ));
                 *multiplier = SLIME_THROW_MINIMUM_VALUE;
             };

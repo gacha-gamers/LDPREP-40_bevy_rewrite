@@ -1,11 +1,11 @@
 use bevy::{prelude::*, utils::HashMap};
-use crate::{GameStates, player::{Player, PLAYER_SIZE, SlimeThrowEvent}, global::{Handles, AnimatedSprite, Moves}};
+use crate::{GameStates, player::{Player, PLAYER_SIZE, SlimeThrowEvent}, global::{Handles, AnimatedSprite, Moves, GameLayer}};
 
 const SLIME_RELATIVE_SIZE: f32 = 0.5; // Slimes' size relative to the player's
 // const SLIME_POSITION_UPDATE_FREQUENCY: f32 = 0.1; 
 const SLIME_ANIMATION_FPS: f32 = 12.; 
-const SLIME_FOLLOW_WEIGHT: f32 = 0.02; // The lower this number is, the smoother the slime following becomes, but the slower the slimes get
-const SLIME_PADDING: f32 = 0.; // Slimes will stop moving if they're at this distance from the slime in front of them
+const SLIME_FOLLOW_WEIGHT: f32 = 0.04; // The lower this number is, the smoother the slime following becomes, but the slower the slimes get
+const SLIME_PADDING: f32 = 20.; // Slimes will stop moving if they're at this distance from the slime in front of them
 const SLIME_LAYER: f32 = 1.;
 
 pub struct SlimePlugin;
@@ -32,8 +32,7 @@ fn slime_spawner(
     mut commands: Commands,
 ) {
     for _ in event.iter() {
-        let mut player_tl = player_query.get_single().unwrap().translation;
-        player_tl.z = SLIME_LAYER; // Put slimes in their layer
+        let player_tl = player_query.get_single().unwrap().translation;
         
 
         commands.spawn(
@@ -54,6 +53,7 @@ fn slime_spawner(
             AnimatedSprite { timer: Timer::from_seconds(1. / SLIME_ANIMATION_FPS, TimerMode::Repeating)},
             Moves::default(),
             Slime { following_player: true},
+            GameLayer(SLIME_LAYER),
         ));
     }
 }
@@ -115,7 +115,7 @@ fn slime_follow (
         if (slime_tf.translation - *position_to_lerp).length() < SLIME_PADDING {continue;}
 
         slime_tf.translation = slime_tf.translation + (*position_to_lerp - slime_tf.translation) * SLIME_FOLLOW_WEIGHT;
-        slime_tf.translation.z = SLIME_LAYER;
+
     }
 }
 
@@ -148,7 +148,7 @@ fn slime_throw(
            slime_moves.direction = throw.direction;
            slime.following_player = false;
 
-           break;
+           break
         }
     }
 }
