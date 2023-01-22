@@ -14,4 +14,5 @@ opt-level = 3
 opt-level = 1
 
 [dependencies]
-bevy = { version = "0.9.1", features = ["wayland"] }
+bevy = { version = "0.9.1", features = ["wayland", "dynamic"] }
+bevy_asset_loader = { version = "0.14.1", features = ["2d"]}

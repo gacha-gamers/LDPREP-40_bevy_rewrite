@@ -1,7 +1,9 @@
-mod slime;
+mod consts;
 mod global;
 mod loading_screen;
 mod player;
+mod slime;
+mod tilemap;
 
 use bevy::prelude::*;
 use global::GlobalPlugin;
@@ -15,9 +17,6 @@ enum GameStates {
     LoadingScreen,
 }
 
-#[derive(Component)]
-struct BandanaDee;
-
 fn setup(mut commands: Commands) {
     commands.spawn(Camera2dBundle::default());
 }
@@ -25,13 +24,17 @@ fn setup(mut commands: Commands) {
 fn main() {
     App::new()
         .insert_resource(ClearColor(Color::rgb(0., 0., 0.)))
-        .add_plugins(DefaultPlugins.set(WindowPlugin {
-            window: WindowDescriptor {
-                title: "Bandana dee is the greatest!".to_string(),
-                ..Default::default()
-            },
-            ..Default::default()
-        }).set(ImagePlugin::default_nearest()))
+        .add_plugins(
+            DefaultPlugins
+                .set(WindowPlugin {
+                    window: WindowDescriptor {
+                        title: "Bandana dee is the greatest!".to_string(),
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                })
+                .set(ImagePlugin::default_nearest()),
+        )
         .add_startup_system(setup)
         .add_state(GameStates::LoadingScreen)
         .add_plugin(LoadingScreenPlugin)

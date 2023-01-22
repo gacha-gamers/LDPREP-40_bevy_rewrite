@@ -1,22 +1,12 @@
+use crate::consts::*;
 use std::f32::consts::PI;
 
 use bevy::math::{vec2, vec3};
 use bevy::prelude::*;
 
-use crate::global::{AnimatedSprite, Handles, Moves, GameLayer};
-use crate::GameStates;
+use crate::global::{AnimatedSprite, GameLayer, Handles, Moves};
 use crate::slime::Slime;
-
-pub const PLAYER_SIZE: Vec2 = vec2(100., 100.);
-const PLAYER_ANIMATION_FPS: f32 = 12.;
-const PLAYER_SPEED: f32 = 300.;
-const ARROW_DISTANCE: f32 = 100.;
-const ARROW_SIZE: Vec2 = vec2(40., 0.); // The default arrow size (As of now, the Y value is not used)
-const SLIME_THROW_MULTIPLIER: f32 = 5000.; // How fast the throw speed grows as the mouse button is held
-const SLIME_THROW_MINIMUM_VALUE: f32 = 300.; // Minimum throw speed
-const ARROW_SIZE_MULTIPLIER: f32 = 0.01; // Controls how fast the arrow grows
-const SLIME_THROW_MULTIPLIER_VALUE: f32 = 10000.; // Maximum throw speed
-const PLAYER_LAYER: f32 = 9.;
+use crate::GameStates;
 
 pub struct PlayerPlugin;
 
@@ -93,6 +83,7 @@ fn slime_animations(
     let (mover, mut texture, mut sprite) = player_query
         .get_single_mut()
         .expect("No player in-game? Please change this line");
+
     let velocity = mover.direction;
 
     if velocity.y > 0. {
@@ -126,7 +117,10 @@ fn player_aim(
     mouse: Res<Input<MouseButton>>,
     window: Res<Windows>,
     assets: Res<Handles>,
-    mut arrow_query: Query<(Entity, &mut Transform, &mut Sprite), (With<PlayerAimArrow>, Without<Player>)>,
+    mut arrow_query: Query<
+        (Entity, &mut Transform, &mut Sprite),
+        (With<PlayerAimArrow>, Without<Player>),
+    >,
     player_query: Query<&Transform, (With<Player>, Without<PlayerAimArrow>)>,
     mut commands: Commands,
     time: Res<Time>,
@@ -149,19 +143,23 @@ fn player_aim(
         commands
             .entity(arrow_query.get_single().unwrap().0)
             .despawn();
-        
-        slime_throw_event.send(
-            SlimeThrowEvent {
-                direction: arrow_direction,
-                speed: *multiplier,
-            }
-        );
+
+        slime_throw_event.send(SlimeThrowEvent {
+            direction: arrow_direction,
+            speed: *multiplier,
+        });
         *multiplier = 0.;
         return;
     }
-    
+
     // If there are no slimes following the player or the button is not pressed, don't do anything
-    if slime_query.iter().filter(|x| x.following_player ).collect::<Vec<&Slime>>().is_empty() || !mouse.pressed(MouseButton::Left) {
+    if slime_query
+        .iter()
+        .filter(|x| x.following_player)
+        .collect::<Vec<&Slime>>()
+        .is_empty()
+        || !mouse.pressed(MouseButton::Left)
+    {
         return;
     }
 
@@ -173,30 +171,31 @@ fn player_aim(
     if let Ok(mut arrow) = arrow_query.get_single_mut() {
         arrow.1.translation = arrow_position;
         arrow.1.rotation = arrow_angle;
-        arrow.2.custom_size.insert(vec2(ARROW_SIZE.x, (ARROW_SIZE.y + *multiplier - SLIME_THROW_MINIMUM_VALUE) * ARROW_SIZE_MULTIPLIER));
+        arrow.2.custom_size.insert(vec2(
+            ARROW_SIZE.x,
+            (ARROW_SIZE.y + *multiplier - SLIME_THROW_MINIMUM_VALUE) * ARROW_SIZE_MULTIPLIER,
+        ));
         if *multiplier < SLIME_THROW_MULTIPLIER_VALUE {
             *multiplier += time.delta_seconds() * SLIME_THROW_MULTIPLIER;
-        } 
-
+        }
     } else {
-                commands.spawn((
-                    SpriteBundle {
-                        sprite: Sprite {
-                            custom_size: Some(ARROW_SIZE),
-                            ..Default::default()
-                        },
-                        transform: Transform {
-                            translation: arrow_position,
-                            rotation: arrow_angle,
-                            ..Default::default()
-                        },
-                        texture: assets.pointing_arrow.clone(),
-                        ..Default::default()
-                    },
-                    PlayerAimArrow,
-                    GameLayer(PLAYER_LAYER)
-                ));
-                *multiplier = SLIME_THROW_MINIMUM_VALUE;
-            };
+        commands.spawn((
+            SpriteBundle {
+                sprite: Sprite {
+                    custom_size: Some(ARROW_SIZE),
+                    ..Default::default()
+                },
+                transform: Transform {
+                    translation: arrow_position,
+                    rotation: arrow_angle,
+                    ..Default::default()
+                },
+                texture: assets.pointing_arrow.clone(),
+                ..Default::default()
+            },
+            PlayerAimArrow,
+            GameLayer(PLAYER_LAYER),
+        ));
+        *multiplier = SLIME_THROW_MINIMUM_VALUE;
+    };
 }
-
